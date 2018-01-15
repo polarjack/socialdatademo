@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+  <meta charset="utf-8">
+  <title>Simple markers</title>
+  <style>
+    /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+
+    #map {
+      height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    #floating-panel {
+      position: absolute;
+      top: 10px;
+      left: 25%;
+      z-index: 5;
+      background-color: #fff;
+      padding: 5px;
+      border: 1px solid #999;
+      text-align: center;
+      font-family: 'Roboto', 'sans-serif';
+      line-height: 30px;
+      padding-left: 10px;
+    }
+
+    #floating-panel {
+      background-color: #fff;
+      border: 1px solid #999;
+      left: 25%;
+      padding: 5px;
+      position: absolute;
+      top: 10px;
+      z-index: 5;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="floating-panel">
+    <button onclick="showStation()">Show Station</button>
+    <button onclick="hideStation()">Hide Station</button>
+
+
+    <button onclick="showGym()">Show Gym</button>
+    <button onclick="hideGym()">Hide Gym</button>
+    <br>
+    <button onclick="showPlay()">Show Ptt</button>
+    <button onclick="hidePlay()">Hide Ptt</button>
+
+    <button onclick="showPixnet()">Show Pixnet</button>
+    <button onclick="hidePixnet()">Hide Pixnet</button>
+
+  </div>
+  <div id="map"></div>
+  <script>
+    $(function () {
+      showStation();
+    })
+
+    var map, heatmap, input;
+    var ptt = [];
+    var pixnet = [];
+    var station = [];
+    var gym = [];
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 12,
+        center: {
+          lat: 35.689487,
+          lng: 139.691706
+        },
+        mapTypeId: 'terrain'
+      });
+
+      $.getJSON("ptt_final_concat.json", function (data) {
+        data.table.map(i => {
+          var cityCircle = new google.maps.Circle({
+            strokeColor: '#f44336',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#f44336',
+            fillOpacity: 0.35,
+            map: map,
+            center: i.position,
+            radius: Math.sqrt(i.weight)* 4,
+            title: i.title
+          });
+          ptt.push(cityCircle)
+        })
+      });
+      $.getJSON("pixnet_final_concat.json", function (data) {
+
+        data.table.map(i => {
+          var cityCircle = new google.maps.Circle({
+            strokeColor: '#4caf50',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#4caf50',
+            fillOpacity: 0.35,
+            center: i.position,
+            map: map,
+            radius: Math.sqrt(i.weight),
+            title: i.title
+          });
+          pixnet.push(cityCircle)
+        })
+      })
+
+      $.getJSON("subwaylocation.json", function (data) {
+        data.table.map(i => {
+          i.position.lat = Number(i.position.lat)
+          i.position.lng = Number(i.position.lng)
+
+          var marks = new google.maps.Circle({
+            strokeColor: '#2196f3',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#2196f3',
+            fillOpacity: 0.35,
+            map: map,
+            center: i.position,
+            radius: 300,
+            title: i.title
+          });
+          station.push(marks)
+        })
+      });
+      $.getJSON("tokyogym.json", function (data) {
+        data.table.map(i => {
+          i.position.lat = Number(i.position.lat)
+          i.position.lng = Number(i.position.lng)
+
+          var marker = new google.maps.Marker({
+            position: i.position,
+            map: map,
+            title: i.title
+          });
+          gym.push(marker)
+        })
+      });
+    }
+
+    function setAllStation(map) {
+      for (var i = 0; i < station.length; i++) {
+        station[i].setMap(map);
+      }
+    }
+
+    function showStation() {
+      setAllStation(map);
+    }
+
+    function hideStation() {
+      setAllStation(null)
+    }
+
+    function setAllPlay(map) {
+      for (var i = 0; i < ptt.length; i++) {
+        ptt[i].setMap(map);
+      }
+    }
+
+    function showPlay() {
+      setAllPlay(map)
+    }
+
+    function hidePlay() {
+      setAllPlay(null)
+    }
+
+    function setAllGym(map) {
+      for (var i = 0; i < gym.length; i++) {
+        gym[i].setMap(map);
+      }
+    }
+
+    function showGym() {
+      setAllGym(map)
+    }
+
+    function hideGym() {
+      setAllGym(null)
+    }
+
+    function setAllPixnet(map) {
+      for (var i = 0; i < pixnet.length; i++) {
+        pixnet[i].setMap(map);
+      }
+    }
+
+    function showPixnet() {
+      setAllPixnet(map)
+    }
+
+    function hidePixnet() {
+      setAllPixnet(null)
+    }
+  </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClG1COBS6izq7X-_rTqMjp-N01GGNaMSA&libraries=visualization&callback=initMap">
+  </script>
+</body>
+
+</html>
